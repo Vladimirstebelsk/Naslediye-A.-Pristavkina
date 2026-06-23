@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Дискуссия - Наследие Анатолия Приставкина</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="forum.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Дискуссия</h1>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Главная</a></li>
+                <li><a href="biografie.html">Биография</a></li>
+                <li><a href="polit-bemuehungen.html">Политическая деятельность</a></li>
+                <li><a href="werke.html">Творчество</a></li>
+                <li><a href="polit-situation.html">Политическая обстановка</a></li>
+                <li><a href="buch.html">Разбор "Тучки"</a></li>
+                <li><a href="forum.html">Дискуссия</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="intro forum-intro">
+            <h2>Дискуссия: актуальность повести «Ночевала тучка золотая»</h2>
+            <p>
+                Здесь можно оставить короткое размышление о темах повести и о том, почему разговор о детях войны, сиротстве, депортации и памяти о прошлом остается важным.
+            </p>
+        </section>
+
+        <section class="intro forum-prompts" aria-labelledby="forum-prompts-title">
+            <h2 id="forum-prompts-title">Темы для обсуждения</h2>
+            <ul class="prompt-list">
+                <li>дети и война</li>
+                <li>сиротство</li>
+                <li>депортация</li>
+                <li>потеря дома</li>
+                <li>память о прошлом</li>
+                <li>ответственность общества</li>
+            </ul>
+        </section>
+
+        <section class="intro forum-panel" aria-labelledby="comment-form-title">
+            <h2 id="comment-form-title">Добавить комментарий</h2>
+            <noscript>
+                <p class="form-status error">Для чтения и отправки комментариев нужен включенный JavaScript.</p>
+            </noscript>
+            <form id="comment-form" class="forum-form">
+                <div class="form-row">
+                    <label for="display-name">Имя <span class="optional">(необязательно)</span></label>
+                    <input id="display-name" name="displayName" type="text" maxlength="40" autocomplete="name" />
+                </div>
+
+                <div class="form-row">
+                    <label for="comment-topic">Тема</label>
+                    <select id="comment-topic" name="topic" required>
+                        <option value="Дети и война">Дети и война</option>
+                        <option value="Сиротство и потеря дома">Сиротство и потеря дома</option>
+                        <option value="Депортация и историческая память">Депортация и историческая память</option>
+                        <option value="Ответственность общества">Ответственность общества</option>
+                        <option value="Литература и травма">Литература и травма</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <label for="comment-message">Комментарий</label>
+                    <textarea id="comment-message" name="message" rows="6" maxlength="1000" required></textarea>
+                    <p class="form-hint">До 1000 символов. Не указывайте email или личные данные.</p>
+                </div>
+
+                <div class="forum-honeypot" aria-hidden="true">
+                    <label for="website">Сайт</label>
+                    <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <button class="button-link" type="submit">Отправить</button>
+                <p id="form-status" class="form-status" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <section class="intro forum-panel" aria-labelledby="comments-title">
+            <h2 id="comments-title">Комментарии</h2>
+            <p id="comments-status" class="form-status" role="status" aria-live="polite">Комментарии загружаются...</p>
+            <div id="comments-list" class="comments-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Наследие Анатолия Приставкина</p>
+        <p class="translation-note">Deutsch: Nutzen Sie die Übersetzungsfunktion des Browsers oder Google Übersetzer.</p>
+    </footer>
+</body>
+</html>
