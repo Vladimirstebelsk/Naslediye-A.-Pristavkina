@@ -169,16 +169,6 @@ main:empty {
     min-width: 0;
 }
 
-.eyebrow {
-    margin-bottom: var(--space-xs);
-    color: var(--color-accent);
-    font-family: var(--font-ui);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
 .home-hero h2 {
     margin-bottom: var(--space-md);
     font-size: clamp(2rem, 5vw, 3.25rem);
@@ -187,6 +177,10 @@ main:empty {
 .home-hero .lead {
     color: var(--color-text-muted);
     font-size: 1.08rem;
+}
+
+.home-hero p:not(.lead) {
+    color: var(--color-text);
 }
 
 .hero-actions {
@@ -249,10 +243,15 @@ main:empty {
     border-top: 1px solid var(--color-rule);
 }
 
+.section-intro {
+    max-width: 650px;
+    color: var(--color-text-muted);
+}
+
 .section-grid,
 .tiles {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-md);
 }
 
