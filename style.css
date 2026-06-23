@@ -179,10 +179,6 @@ main:empty {
     font-size: 1.08rem;
 }
 
-.home-hero p:not(.lead) {
-    color: var(--color-text);
-}
-
 .hero-actions {
     display: flex;
     flex-wrap: wrap;
@@ -251,14 +247,14 @@ main:empty {
 .section-grid,
 .tiles {
     display: grid;
+    align-items: start;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-md);
 }
 
 .section-card {
     display: block;
-    min-height: 100%;
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md) var(--space-md);
     color: var(--color-text);
     text-decoration: none;
     background: var(--color-paper-soft);
@@ -267,6 +263,7 @@ main:empty {
 }
 
 .section-card h3 {
+    margin-top: 0;
     margin-bottom: var(--space-xs);
     color: var(--color-accent-dark);
     font-size: 1.2rem;
@@ -274,6 +271,7 @@ main:empty {
 }
 
 .section-card p {
+    margin-bottom: 0;
     color: var(--color-text-muted);
     font-size: 0.98rem;
     line-height: 1.6;
