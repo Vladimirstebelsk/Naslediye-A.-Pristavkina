@@ -254,7 +254,7 @@ main:empty {
 
 .section-card {
     display: block;
-    padding: var(--space-md);
+    padding: var(--space-sm) var(--space-md) var(--space-md);
     color: var(--color-text);
     text-decoration: none;
     background: var(--color-paper-soft);
@@ -263,6 +263,7 @@ main:empty {
 }
 
 .section-card h3 {
+    margin-top: 0;
     margin-bottom: var(--space-xs);
     color: var(--color-accent-dark);
     font-size: 1.2rem;
