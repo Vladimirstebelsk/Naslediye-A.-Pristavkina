@@ -8,13 +8,6 @@ const COMMENTS_KEY = "comments.json";
 const LOCAL_COMMENTS_PATH = process.env.FORUM_COMMENTS_PATH || path.join(os.tmpdir(), "naslediye-pristavkina-comments.json");
 const MAX_NAME_LENGTH = 40;
 const MAX_MESSAGE_LENGTH = 1000;
-const ALLOWED_TOPICS = [
-    "Дети и война",
-    "Сиротство и потеря дома",
-    "Депортация и историческая память",
-    "Ответственность общества",
-    "Литература и травма"
-];
 const JSON_HEADERS = {
     "Content-Type": "application/json; charset=utf-8",
     "Cache-Control": "no-store"
@@ -65,18 +58,31 @@ function sortComments(comments) {
     });
 }
 
+function normalizeStoredComment(comment) {
+    return {
+        id: comment.id,
+        createdAt: comment.createdAt,
+        displayName: comment.displayName || "Анонимно",
+        message: comment.message || ""
+    };
+}
+
+function normalizeStoredComments(comments) {
+    return sortComments(comments).map(normalizeStoredComment);
+}
+
 async function readComments() {
     const store = await getBlobStore();
 
     if (store) {
         const comments = await store.get(COMMENTS_KEY, { type: "json" });
-        return Array.isArray(comments) ? sortComments(comments) : [];
+        return Array.isArray(comments) ? normalizeStoredComments(comments) : [];
     }
 
     try {
         const content = await fs.readFile(LOCAL_COMMENTS_PATH, "utf8");
         const comments = JSON.parse(content);
-        return Array.isArray(comments) ? sortComments(comments) : [];
+        return Array.isArray(comments) ? normalizeStoredComments(comments) : [];
     } catch (error) {
         if (error.code === "ENOENT") {
             return [];
@@ -87,7 +93,7 @@ async function readComments() {
 
 async function writeComments(comments) {
     const store = await getBlobStore();
-    const sortedComments = sortComments(comments);
+    const sortedComments = normalizeStoredComments(comments);
 
     if (store) {
         await store.setJSON(COMMENTS_KEY, sortedComments);
@@ -105,15 +111,10 @@ function countUrls(message) {
 
 function validateComment(payload) {
     const displayName = normalizeString(payload.displayName) || "Анонимно";
-    const topic = normalizeString(payload.topic);
     const message = normalizeString(payload.message);
 
     if (displayName.length > MAX_NAME_LENGTH) {
         return { error: "Имя должно быть не длиннее 40 символов." };
-    }
-
-    if (!ALLOWED_TOPICS.includes(topic)) {
-        return { error: "Выберите одну из предложенных тем." };
     }
 
     if (!message) {
@@ -133,7 +134,6 @@ function validateComment(payload) {
             id: typeof crypto.randomUUID === "function" ? crypto.randomUUID() : crypto.randomBytes(16).toString("hex"),
             createdAt: new Date().toISOString(),
             displayName,
-            topic,
             message
         }
     };
