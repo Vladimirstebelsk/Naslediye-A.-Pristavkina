@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Модерация комментариев</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="forum-admin.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Модерация комментариев</h1>
+    </header>
+
+    <main>
+        <section class="intro forum-panel" aria-labelledby="admin-token-title">
+            <h2 id="admin-token-title">Доступ модератора</h2>
+            <form id="admin-token-form" class="forum-form admin-token-form">
+                <div class="form-row">
+                    <label for="admin-token">Токен</label>
+                    <input id="admin-token" name="adminToken" type="password" autocomplete="current-password" required />
+                </div>
+
+                <button class="button-link" type="submit">Загрузить комментарии</button>
+                <p id="admin-status" class="form-status" role="status" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <section class="intro forum-panel" aria-labelledby="admin-comments-title">
+            <h2 id="admin-comments-title">Комментарии</h2>
+            <div id="admin-comments-list" class="comments-list admin-comments-list"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Наследие Анатолия Приставкина</p>
+        <p class="translation-note">Страница модерации не добавлена в публичную навигацию.</p>
+    </footer>
+</body>
+</html>

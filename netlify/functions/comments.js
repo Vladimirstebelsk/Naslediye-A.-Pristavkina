@@ -28,6 +28,10 @@ function normalizeString(value) {
     return typeof value === "string" ? value.trim() : "";
 }
 
+function isLocalStorageMode() {
+    return process.env.NETLIFY_DEV === "true" || process.env.FORUM_STORAGE === "local";
+}
+
 function isNetlifyRuntime() {
     return process.env.NETLIFY === "true" || Boolean(process.env.CONTEXT && process.env.URL);
 }
@@ -72,6 +76,10 @@ function normalizeStoredComments(comments) {
 }
 
 async function readComments() {
+    if (isLocalStorageMode()) {
+        return readLocalComments();
+    }
+
     const store = await getBlobStore();
 
     if (store) {
@@ -79,6 +87,10 @@ async function readComments() {
         return Array.isArray(comments) ? normalizeStoredComments(comments) : [];
     }
 
+    return readLocalComments();
+}
+
+async function readLocalComments() {
     try {
         const content = await fs.readFile(LOCAL_COMMENTS_PATH, "utf8");
         const comments = JSON.parse(content);
@@ -92,16 +104,27 @@ async function readComments() {
 }
 
 async function writeComments(comments) {
-    const store = await getBlobStore();
     const sortedComments = normalizeStoredComments(comments);
+
+    if (isLocalStorageMode()) {
+        await writeLocalComments(sortedComments);
+        return sortedComments;
+    }
+
+    const store = await getBlobStore();
 
     if (store) {
         await store.setJSON(COMMENTS_KEY, sortedComments);
         return sortedComments;
     }
 
-    await fs.writeFile(LOCAL_COMMENTS_PATH, JSON.stringify(sortedComments, null, 2), "utf8");
+    await writeLocalComments(sortedComments);
     return sortedComments;
+}
+
+async function writeLocalComments(sortedComments) {
+    await fs.mkdir(path.dirname(LOCAL_COMMENTS_PATH), { recursive: true });
+    await fs.writeFile(LOCAL_COMMENTS_PATH, JSON.stringify(sortedComments, null, 2), "utf8");
 }
 
 function countUrls(message) {
@@ -139,6 +162,48 @@ function validateComment(payload) {
     };
 }
 
+function getHeader(headers, name) {
+    if (!headers) {
+        return "";
+    }
+
+    const requestedName = name.toLowerCase();
+    const matchedHeader = Object.keys(headers).find((key) => key.toLowerCase() === requestedName);
+    return matchedHeader ? headers[matchedHeader] : "";
+}
+
+function hasValidAdminToken(event) {
+    const configuredToken = normalizeString(process.env.FORUM_ADMIN_TOKEN);
+    const requestToken = normalizeString(getHeader(event.headers, "x-admin-token"));
+    return Boolean(configuredToken) && requestToken === configuredToken;
+}
+
+async function deleteComment(event) {
+    if (!hasValidAdminToken(event)) {
+        return jsonResponse(401, { error: "Неверный токен модератора." });
+    }
+
+    const id = normalizeString(event.queryStringParameters && event.queryStringParameters.id);
+    if (!id) {
+        return jsonResponse(400, { error: "Не указан id комментария." });
+    }
+
+    try {
+        const comments = await readComments();
+        const updatedComments = comments.filter((comment) => comment.id !== id);
+
+        if (updatedComments.length === comments.length) {
+            return jsonResponse(404, { error: "Комментарий не найден." });
+        }
+
+        await writeComments(updatedComments);
+        return jsonResponse(200, { ok: true, deleted: id });
+    } catch (error) {
+        console.error(error);
+        return jsonResponse(500, { error: "Не удалось удалить комментарий." });
+    }
+}
+
 exports.handler = async function handler(event) {
     if (event.httpMethod === "OPTIONS") {
         return { statusCode: 204, headers: JSON_HEADERS, body: "" };
@@ -149,8 +214,13 @@ exports.handler = async function handler(event) {
             const comments = await readComments();
             return jsonResponse(200, { order: "oldest-first", comments });
         } catch (error) {
+            console.error(error);
             return jsonResponse(500, { error: "Не удалось загрузить комментарии." });
         }
+    }
+
+    if (event.httpMethod === "DELETE") {
+        return deleteComment(event);
     }
 
     if (event.httpMethod !== "POST") {
@@ -179,6 +249,7 @@ exports.handler = async function handler(event) {
         await writeComments(comments);
         return jsonResponse(201, { ok: true, comment: validation.comment });
     } catch (error) {
+        console.error(error);
         return jsonResponse(500, { error: "Не удалось сохранить комментарий." });
     }
 };

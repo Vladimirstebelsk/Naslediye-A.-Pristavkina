@@ -530,6 +530,23 @@ audio {
     white-space: pre-wrap;
 }
 
+.admin-token-form {
+    max-width: 560px;
+}
+
+.admin-comment-card {
+    display: grid;
+    gap: var(--space-sm);
+}
+
+.admin-comment-actions {
+    margin-top: var(--space-xs);
+}
+
+.admin-comment-actions .button-link {
+    width: fit-content;
+}
+
 footer {
     margin-top: var(--space-lg);
     padding: var(--space-lg);
