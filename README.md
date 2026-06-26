@@ -14,6 +14,7 @@ The public version is hosted on Netlify and may later be linked from the school 
 - `plot.html` - plot
 - `relevance.html` - relevance of the story
 - `forum.html` - discussion forum for the relevance of the story
+- `forum-admin.html` - unlinked moderation page for comments
 - `polit-situation.html` - political situation
 - `polit-bemuehungen.html` - political efforts
 
@@ -29,10 +30,9 @@ The discussion forum uses a Netlify Function, so comments only work on the Netli
 
 `forum.html` provides a lightweight discussion forum for the topic "Актуальность повести «Ночевала тучка золотая»".
 
-Comments are saved through the Netlify Function at `/.netlify/functions/comments`. The function stores comment data with Netlify Blobs. Each comment stores only:
+Comments are saved through the Netlify Function at `/.netlify/functions/comments`. The function stores comment data in the Netlify Blobs store `forum-comments` under `comments.json`. Each comment stores only:
 
 - display name, or `Анонимно` when no name is entered
-- selected discussion topic
 - message text
 - creation timestamp
 - generated comment id
@@ -44,9 +44,25 @@ Validation is handled by the Netlify Function:
 - message is required
 - message is limited to 1000 characters
 - display name is limited to 40 characters
-- topic must be one of the fixed forum topics
 - comments with more than one URL are rejected
 - a hidden honeypot field helps reject simple spam bots
+
+In production, comments persist across deploys because the function uses `getStore` from Netlify Blobs. Local `netlify dev` uses local or sandbox storage that is separate from production comments.
+
+## Comment Moderation
+
+`forum-admin.html` is an unlinked moderation page. It is not included in the public site navigation.
+
+Moderation uses the same Netlify Function and Blobs storage as the public forum. The admin page asks for a token and sends it only in the `x-admin-token` request header when deleting a comment. The token is not hardcoded in the frontend.
+
+Set the moderation token in Netlify:
+
+1. Open the Netlify site dashboard.
+2. Go to Site configuration → Environment variables.
+3. Add `FORUM_ADMIN_TOKEN` with a strong private value.
+4. Redeploy the site if Netlify does not apply the variable automatically.
+
+To moderate comments, open `forum-admin.html`, enter the token, load comments, and delete the needed comment.
 
 If the Netlify CLI is available, local testing can be done with:
 
