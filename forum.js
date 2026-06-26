@@ -64,7 +64,6 @@
             }
 
             article.appendChild(meta);
-            appendText(article, "p", "comment-topic", comment.topic || "Без темы");
             appendText(article, "p", "comment-message", comment.message || "");
             commentsList.appendChild(article);
         });
@@ -98,7 +97,6 @@
     function getPayload() {
         return {
             displayName: form.elements.displayName.value,
-            topic: form.elements.topic.value,
             message: form.elements.message.value,
             website: form.elements.website.value
         };
