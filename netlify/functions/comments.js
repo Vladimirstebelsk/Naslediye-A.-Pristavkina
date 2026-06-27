@@ -40,13 +40,30 @@ function logStorageMode() {
     console.log("comments storage mode:", getStorageMode());
 }
 
+function hasManualBlobConfig() {
+    return Boolean(process.env.FORUM_BLOBS_SITE_ID && process.env.FORUM_BLOBS_TOKEN);
+}
+
 async function getBlobStore() {
     if (storeResolved) {
         return cachedStore;
     }
 
     const { getStore } = await import("@netlify/blobs");
-    cachedStore = getStore(STORE_NAME);
+
+    if (hasManualBlobConfig()) {
+        cachedStore = getStore({
+            name: STORE_NAME,
+            siteID: process.env.FORUM_BLOBS_SITE_ID,
+            token: process.env.FORUM_BLOBS_TOKEN
+        });
+    } else {
+        try {
+            cachedStore = getStore({ name: STORE_NAME });
+        } catch (error) {
+            cachedStore = getStore(STORE_NAME);
+        }
+    }
 
     if (!cachedStore) {
         throw new Error("Netlify Blobs store is unavailable.");

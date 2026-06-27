@@ -47,7 +47,7 @@ Validation is handled by the Netlify Function:
 - comments with more than one URL are rejected
 - a hidden honeypot field helps reject simple spam bots
 
-In production, comments persist across deploys because the function uses `getStore` from Netlify Blobs. Local `netlify dev` uses local or sandbox storage that is separate from production comments.
+In production, comments persist across deploys because the function uses `getStore` from Netlify Blobs. Local `netlify dev` should be run with `FORUM_STORAGE=local`; that local JSON storage is separate from production comments.
 
 ## Comment Moderation
 
@@ -55,12 +55,14 @@ In production, comments persist across deploys because the function uses `getSto
 
 Moderation uses the same Netlify Function and Blobs storage as the public forum. The admin page asks for a token and sends it only in the `x-admin-token` request header when deleting a comment. The token is not hardcoded in the frontend.
 
-Set the moderation token in Netlify:
+Set the forum environment variables in Netlify:
 
 1. Open the Netlify site dashboard.
 2. Go to Site configuration → Environment variables.
 3. Add `FORUM_ADMIN_TOKEN` with a strong private value.
-4. Redeploy the site if Netlify does not apply the variable automatically.
+4. Add `FORUM_BLOBS_SITE_ID` with the Netlify site ID used for the Blobs store.
+5. Add `FORUM_BLOBS_TOKEN` with a Netlify token that can access the site Blobs store.
+6. Redeploy the site if Netlify does not apply the variables automatically.
 
 To moderate comments, open `forum-admin.html`, enter the token, load comments, and delete the needed comment.
 
