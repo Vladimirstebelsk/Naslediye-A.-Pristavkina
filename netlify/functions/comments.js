@@ -32,8 +32,12 @@ function isLocalStorageMode() {
     return process.env.NETLIFY_DEV === "true" || process.env.FORUM_STORAGE === "local";
 }
 
-function isNetlifyRuntime() {
-    return process.env.NETLIFY === "true" || Boolean(process.env.CONTEXT && process.env.URL);
+function getStorageMode() {
+    return isLocalStorageMode() ? "local-file" : "netlify-blobs";
+}
+
+function logStorageMode() {
+    console.log("comments storage mode:", getStorageMode());
 }
 
 async function getBlobStore() {
@@ -41,18 +45,14 @@ async function getBlobStore() {
         return cachedStore;
     }
 
-    storeResolved = true;
+    const { getStore } = require("@netlify/blobs");
+    cachedStore = getStore(STORE_NAME);
 
-    try {
-        const { getStore } = require("@netlify/blobs");
-        cachedStore = getStore(STORE_NAME);
-    } catch (error) {
-        if (isNetlifyRuntime()) {
-            throw error;
-        }
-        cachedStore = null;
+    if (!cachedStore) {
+        throw new Error("Netlify Blobs store is unavailable.");
     }
 
+    storeResolved = true;
     return cachedStore;
 }
 
@@ -76,18 +76,13 @@ function normalizeStoredComments(comments) {
 }
 
 async function readComments() {
-    if (isLocalStorageMode()) {
+    if (getStorageMode() === "local-file") {
         return readLocalComments();
     }
 
     const store = await getBlobStore();
-
-    if (store) {
-        const comments = await store.get(COMMENTS_KEY, { type: "json" });
-        return Array.isArray(comments) ? normalizeStoredComments(comments) : [];
-    }
-
-    return readLocalComments();
+    const comments = await store.get(COMMENTS_KEY, { type: "json" });
+    return Array.isArray(comments) ? normalizeStoredComments(comments) : [];
 }
 
 async function readLocalComments() {
@@ -106,19 +101,13 @@ async function readLocalComments() {
 async function writeComments(comments) {
     const sortedComments = normalizeStoredComments(comments);
 
-    if (isLocalStorageMode()) {
+    if (getStorageMode() === "local-file") {
         await writeLocalComments(sortedComments);
         return sortedComments;
     }
 
     const store = await getBlobStore();
-
-    if (store) {
-        await store.setJSON(COMMENTS_KEY, sortedComments);
-        return sortedComments;
-    }
-
-    await writeLocalComments(sortedComments);
+    await store.setJSON(COMMENTS_KEY, sortedComments);
     return sortedComments;
 }
 
@@ -205,6 +194,8 @@ async function deleteComment(event) {
 }
 
 exports.handler = async function handler(event) {
+    logStorageMode();
+
     if (event.httpMethod === "OPTIONS") {
         return { statusCode: 204, headers: JSON_HEADERS, body: "" };
     }
@@ -212,10 +203,10 @@ exports.handler = async function handler(event) {
     if (event.httpMethod === "GET") {
         try {
             const comments = await readComments();
-            return jsonResponse(200, { order: "oldest-first", comments });
+            return jsonResponse(200, { order: "oldest-first", storage: getStorageMode(), comments });
         } catch (error) {
             console.error(error);
-            return jsonResponse(500, { error: "Не удалось загрузить комментарии." });
+            return jsonResponse(500, { error: "Не удалось загрузить комментарии.", storage: getStorageMode() });
         }
     }
 
