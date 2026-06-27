@@ -45,7 +45,7 @@ async function getBlobStore() {
         return cachedStore;
     }
 
-    const { getStore } = require("@netlify/blobs");
+    const { getStore } = await import("@netlify/blobs");
     cachedStore = getStore(STORE_NAME);
 
     if (!cachedStore) {
